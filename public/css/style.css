@@ -1,0 +1,22 @@
+.chat-row{
+    margin: 50px;
+}
+
+li.chat-user-list{
+    list-style: none;
+}
+
+.chat-body{
+    height: calc(100vh - 375px);
+    background: #ffffff;
+    padding: 30px 50px;
+    margin-bottom: 20px;
+    position: relative;
+}
+.chat-box{
+    background: #ffffff;
+}
+.message-text{
+    margin-left: 45px;
+    margin-top: -10px;
+}
