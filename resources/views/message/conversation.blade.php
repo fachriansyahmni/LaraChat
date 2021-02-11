@@ -9,6 +9,7 @@
                 @if ($users->count())
                     @foreach ($users as $user)
                     <li class="chat-user-list">
+                        <i class="fa fa-circle user-status-icon user-icon-{{$user->id}}"></i>
                         <a href="#">{{$user->name}}</a>
                     </li>
                     @endforeach
@@ -53,3 +54,69 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+    <script>
+        $(function(){
+            let $chatInput = $(".chat-input");
+            let $chatInputToolbar = $('.chat-input-toolbar');
+            let $chatBody = $(".chat-body");
+
+            let user_id = "{{Auth::user()->id}}";
+            let ip_address = '127.0.0.1';
+            let socket_port = '8005';
+            let socket = io(ip_address + ':' + socket_port);
+            let friendId = "{{ $friendInfo->id }}";
+
+            socket.on('connect',function(){
+                socket.emit('user_connected',user_id);
+            });
+            socket.on('updateUserStatus', (data)=>{
+                let $userStatusIcon = $('.user-status-icon');
+                $userStatusIcon.removeClass('text-success');
+                console.log(data);
+                $.each(data, function(key, val){
+                    if(val !== null && val !== 0){
+                        console.log(key);
+                        let $userIcon = $(".user-icon-"+key);
+                        $userIcon.addClass('text-success');
+                    }
+                });
+            });
+
+            $chatInput.keypress(function(e){
+                let msg = $(this).html();
+                if(e.which === 13 && !e.shiftKey){
+                    $chatInput.html("");
+                    sendMessage(msg);
+                    return false;
+                }
+            });
+
+            function sendMessage(msg){
+                let url = "{{ route('message.send-message') }}";
+                let form = $(this);
+                let formData = new FormData();
+                let token = "{{ csrf_token() }}";
+
+                formData.append('message',msg);
+                formData.append('_token',token);
+                formData.append('receiver_id',friendId);
+
+                $.ajax({
+                    url: url,
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    dataType: 'JSON',
+                    success: function (resp){
+                        if(resp.success){
+                            console.log(resp.data);
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+@endpush
